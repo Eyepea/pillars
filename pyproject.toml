@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "pillars"
+version = "0.1.0"
+description = ""
+authors = ["Allocloud <allocloud@ovv.wtf>"]
+readme = "README.md"
+license = "Apache-2.0"
+
+[tool.poetry.dependencies]
+python = "3.7"
+cython = "^0.28.5"
+uvloop = "^0.11.2"
+cchardet = "^2.1"
+aiohttp = "^3.3"
+asyncpg = "^0.17.0"
+attrs = "^18.1"
+ujson = "^1.35"
+async-timeout = "^3.0"
+setproctitle = "^1.1"
+aiosip = {git = "https://github.com/eyepea/aiosip.git"}
+aiodns = "^1.1"
+panoramisk = {git = "https://github.com/gawel/panoramisk.git"}
+pyyaml = "^3.13"
+aioredis = "^1.1"
+cerberus = "^1.2"
+
+[tool.poetry.dev-dependencies]
+black = "^18.3-alpha.0"
+flake8 = "^3.5"
+isort = "^4.3"
+tox = "^3.2"
+mypy = "^0.630.0"
+sphinx = "^1.7"
+sphinxcontrib-napoleon = "^0.6.1"

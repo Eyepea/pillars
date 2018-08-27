@@ -1,0 +1,6 @@
+.idea
+.tox
+dist/
+.mypy_cache
+docs/_build
+*.egg-info
