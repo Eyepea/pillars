@@ -18,7 +18,7 @@ from os import path
 from io import open
 here = path.abspath(path.dirname(__file__))
 # Get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
@@ -29,11 +29,11 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     version='0.1.1',  # Required
     # https://packaging.python.org/specifications/core-metadata/#summary
-    description="",  # Required
+    description="Collection of helpers for building asyncio daemons.",  # Required
     # https://packaging.python.org/specifications/core-metadata/#description-optional
     long_description=long_description,  # Optional
     # https://packaging.python.org/specifications/core-metadata/#description-content-type-optional
-    long_description_content_type='text/markdown',  # Optional (see note above)
+    # long_description_content_type='text/markdown',  # Optional (see note above)
     author="Allocloud",  # Optional
     author_email="allocloud@ovv.wtf",  # Optional
     # For a list of valid classifiers, see https://pypi.org/classifiers/
