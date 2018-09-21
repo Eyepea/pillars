@@ -3,11 +3,11 @@
 
 Collection of helpers for building asyncio daemons.
 
-.. image:: https://readthedocs.org/projects/pypillars/badge/?version=stable
-    :target: http://pypillars.readthedocs.io/en/stable/?badge=stable
+.. image:: https://readthedocs.org/projects/pypillars/badge/?version=latest
+    :target: http://pypillars.readthedocs.io/en/latest/
     :alt: Documentation Status
-.. image:: https://travis-ci.org/eyepea/pillars.svg?branch=master
-    :target: https://travis-ci.org/eyepea/pillars
+.. image:: https://travis-ci.org/Eyepea/pillars.svg?branch=master
+    :target: https://travis-ci.org/Eyepea/pillars
     :alt: Travis-ci status
 .. image:: https://badge.fury.io/py/pillars.svg
     :target: https://pypi.org/project/pillars/
