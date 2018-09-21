@@ -27,7 +27,7 @@ setup(
     name='pillars',  # Required
     # https://www.python.org/dev/peps/pep-0440/
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.0',  # Required
+    version='0.1.1',  # Required
     # https://packaging.python.org/specifications/core-metadata/#summary
     description="",  # Required
     # https://packaging.python.org/specifications/core-metadata/#description-optional

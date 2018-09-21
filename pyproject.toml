@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pillars"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Allocloud <allocloud@ovv.wtf>"]
 readme = "README.md"
