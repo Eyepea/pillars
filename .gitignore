@@ -3,4 +3,5 @@
 dist/
 .mypy_cache
 docs/_build
+docs/.doctrees
 *.egg-info

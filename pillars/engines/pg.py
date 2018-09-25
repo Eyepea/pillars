@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import uuid
 from contextlib import asynccontextmanager
 from typing import Optional
 
@@ -117,28 +116,13 @@ async def register_json_codec(con: asyncpg.Connection) -> None:
     )
 
 
-async def register_uuid_str_codec(con: asyncpg.Connection) -> None:
-
-    await con.set_type_codec(
-        "uuid",
-        encoder=uuid_encoder,
-        decoder=uuid_decoder,
-        schema="pg_catalog",
-        format="binary",
-    )
-
-
 def jsonb_encoder(value: str) -> bytes:
-    return b"\x01" + ujson.dumps(value).encode("utf-8")
+    try:
+        return b"\x01" + ujson.dumps(value).encode("utf-8")
+    except Exception:
+        LOG.error("""Unable to encode to JSONB: %s""", value)
+        raise
 
 
 def jsonb_decoder(value: bytes) -> dict:
     return ujson.loads(value[1:].decode("utf-8"))
-
-
-def uuid_encoder(value: str) -> uuid.UUID:
-    return uuid.UUID(value)
-
-
-def uuid_decoder(value: str) -> uuid.UUID:
-    return uuid.UUID(value)

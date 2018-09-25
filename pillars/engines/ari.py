@@ -68,11 +68,13 @@ class AriClient:
 
         url = self._base_url + url
         response = await self._client.request(method, url, json=data, params=params)
-        if 100 < response.status < 300:
-            return await response.json()
+        response.raise_for_status()
+
+        response_data = await response.text()
+        if response_data:
+            return ujson.loads(response_data)
         else:
-            response_content = await response.text()
-            raise AriException(response, response_content, url, data, params)
+            return {}
 
     ###########
     # HELPERS #
@@ -83,24 +85,3 @@ class AriClient:
             return f"{channel_prefix}.{self._channel_counter.new()}"
         else:
             return self._channel_counter.new()
-
-
-class AriException(Exception):
-    def __init__(
-        self,
-        response: aiohttp.ClientResponse,
-        response_content: str,
-        url: str,
-        data: Optional[dict],
-        params: Optional[dict],
-    ) -> None:
-        self.response = response
-        self.response_content = response_content
-        self.url = url
-        self.data = data
-        self.params = params
-
-    def __repr__(self) -> str:
-        return (
-            f"<AriException: {self.response}, {self.url}, {self.data}, {self.params}>"
-        )
