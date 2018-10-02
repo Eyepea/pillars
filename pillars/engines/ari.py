@@ -14,14 +14,14 @@ LOG = logging.getLogger(__name__)
 @dataclass
 class ChannelCounter:
     time: int = field(default_factory=lambda: int(time.time()))
-    counter: int = field(default=1)
+    counter: int = field(default=0)
 
     def new(self):
         current_time = int(time.time())
         if current_time == self.time:
             self.counter += 1
         else:
-            self.time = time
+            self.time = current_time
             self.counter = 1
 
         return f"{current_time}.{self.counter}"
@@ -34,6 +34,7 @@ class AriClient:
         self._base_url = url
         self._auth = auth
         self._channel_counter = ChannelCounter()
+        self._client: Optional[aiohttp.ClientSession] = None
 
         app.on_startup.append(self._startup)
         app.on_shutdown.append(self._shutdown)
@@ -46,7 +47,8 @@ class AriClient:
 
     async def _shutdown(self, app: Application) -> None:
         LOG.debug("Shutting down ARI client engine")
-        await self._client.close()
+        if self._client:
+            await self._client.close()
 
     async def status(self) -> bool:
         try:
@@ -65,11 +67,23 @@ class AriClient:
         params: Optional[dict] = None,
     ) -> dict:
         LOG.log(4, "ARI request %s to %s with %s %s", method, url, params, data)
-
         url = self._base_url + url
+        response = await self._request(method, url, data, params)
+        return response
+
+    async def _request(
+        self,
+        method: str,
+        url: str,
+        data: Optional[dict] = None,
+        params: Optional[dict] = None,
+    ) -> dict:
+
+        if not self._client:
+            raise RuntimeError("Engine not started")
+
         response = await self._client.request(method, url, json=data, params=params)
         response.raise_for_status()
-
         response_data = await response.text()
         if response_data:
             return ujson.loads(response_data)
