@@ -118,6 +118,7 @@ class WSClientSite(BaseSite):
 
     async def stop(self) -> None:
         self._closing = True
+        await self._session.close()
         await super().stop()
 
     async def _ws_connection(self) -> None:
