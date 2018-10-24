@@ -118,7 +118,6 @@ class WSClientSite(BaseSite):
 
     async def stop(self) -> None:
         self._closing = True
-        await self._session.close()
         await super().stop()
 
     async def _ws_connection(self) -> None:
@@ -144,7 +143,9 @@ class WSClientSite(BaseSite):
         except Exception as e:
             self._protocol.connection_lost(e)
 
-        if not self._closing:
+        if self._closing:
+            await self._session.close()
+        else:
             asyncio.create_task(self._ws_connection())  # type: ignore
 
     async def status(self) -> bool:
