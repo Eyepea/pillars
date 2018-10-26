@@ -49,7 +49,7 @@ def register_transports(app):
         app=http,
         name="http",
         runner=aiohttp.web.AppRunner(http),
-        sites=(functools.partial(aiohttp.web.TCPSite, host="127.0.01", port=8080),),
+        sites=(functools.partial(aiohttp.web.TCPSite, host="127.0.0.1", port=8080),),
     )
 
     http.router.add_route("GET", "/no_config", no_config)
