@@ -23,6 +23,7 @@ panoramisk = {git = "https://github.com/gawel/panoramisk.git"}
 pyyaml = "^3.13"
 aioredis = "^1.1"
 cerberus = "^1.2"
+dbussy = "^1.1"
 
 [tool.poetry.dev-dependencies]
 black = "^18.3-alpha.0"
