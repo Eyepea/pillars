@@ -52,7 +52,6 @@ class DbusProtocol(dbus.DbusProtocol):
             member=message.member,
             arguments=list(message.objects),
         )
-        LOG.log(4, signal)
         asyncio.ensure_future(self._handler(signal))
 
     def connection_lost(self, eror: Optional[Exception]) -> None:
@@ -80,6 +79,7 @@ class Application(collections.MutableMapping):
         pass
 
     async def _handler(self, signal: dbus.DbusSignal) -> None:
+        LOG.debug("Handling: %s", signal)
         route = self.router.resolve(signal)
         if route:
             for middleware in reversed(self._middlewares):

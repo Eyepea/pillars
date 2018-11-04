@@ -14,13 +14,14 @@ def main():
 
 
 async def display(signal):
-    print(f"RECEIVED: {signal}")
+    print(f"Global shortcut pressed: {signal.arguments[1]}")
 
 
 def register_transports(app):
 
     dbus = pillars.transports.dbus.Application(app)
 
+    # Register Handler
     dbus.router.add(
         handler=display,
         interface="org.kde.kglobalaccel.Component",
@@ -36,15 +37,28 @@ def register_transports(app):
                 pillars.sites.dbus.DbusSignalListener, bus=dbussy.DBUS.BUS_SESSION
             ),
             functools.partial(
-                pillars.sites.dbus.DbusSignalListener, bus=dbussy.DBUS.BUS_SESSION
+                pillars.sites.dbus.DbusSignalListener, bus=dbussy.DBUS.BUS_SYSTEM
             ),
         ),
     )
 
+    # # Ask DBUS to only receive events from specific interface
+    # match = pillars.sites.dbus.DbusMatch(
+    #     interface="org.kde.kglobalaccel.Component"
+    # )
+
+    # app.listen(
+    #     app=dbus,
+    #     name="dbus",
+    #     runner=pillars.transports.dbus.AppRunner(dbus),
+    #     sites=(
+    #         functools.partial(
+    #             pillars.sites.dbus.DbusSignalListener, bus=dbussy.DBUS.BUS_SESSION, matches=[match, ]
+    #         ),
+    #     ),
+    # )
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    # To see all incoming signal set logging level to 4
-    # logging.basicConfig(level=4)
-
     main()
