@@ -1,9 +1,8 @@
 import functools
 import logging
 
-import aiohttp.web
-import pillars
 import dbussy
+import pillars
 
 LOG = logging.getLogger()
 
@@ -13,6 +12,7 @@ def main():
     register_transports(app)
     app.run()
 
+
 async def display(signal):
     print(f"RECEIVED: {signal}")
 
@@ -21,16 +21,24 @@ def register_transports(app):
 
     dbus = pillars.transports.dbus.Application(app)
 
-    dbus.router.add(handler=display, interface="org.kde.kglobalaccel.Component", member="globalShortcutPressed")
+    dbus.router.add(
+        handler=display,
+        interface="org.kde.kglobalaccel.Component",
+        member="globalShortcutPressed",
+    )
 
     app.listen(
         app=dbus,
         name="dbus",
         runner=pillars.transports.dbus.AppRunner(dbus),
         sites=(
-                functools.partial(pillars.sites.dbus.DbusSignalListener, bus=dbussy.DBUS.BUS_SESSION),
-                functools.partial(pillars.sites.dbus.DbusSignalListener, bus=dbussy.DBUS.BUS_SESSION),
+            functools.partial(
+                pillars.sites.dbus.DbusSignalListener, bus=dbussy.DBUS.BUS_SESSION
             ),
+            functools.partial(
+                pillars.sites.dbus.DbusSignalListener, bus=dbussy.DBUS.BUS_SESSION
+            ),
+        ),
     )
 
 

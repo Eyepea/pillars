@@ -1,36 +1,39 @@
 import asyncio
 import collections
-import logging
-from typing import Awaitable, Callable
 import functools
-from aiohttp.web_runner import BaseRunner
+import logging
 from collections import defaultdict
+from typing import Awaitable, Callable, Iterable, Optional, Tuple
 
+import dbussy
+from aiohttp.web_runner import BaseRunner
+
+from ..app import Application as MainApplication
 from ..sites import dbus
 
 LOG = logging.getLogger(__name__)
 
 
 class AppRunner(BaseRunner):
-    def __init__(self, app):
+    def __init__(self, app: "Application") -> None:
         super().__init__()
         self._app = app
 
-    async def shutdown(self):
+    async def shutdown(self) -> None:
         await self._app.shutdown()
 
-    async def _make_server(self):
+    async def _make_server(self) -> "DbusServer":
         return DbusServer(self._app._handler)
 
-    async def _cleanup_server(self):
+    async def _cleanup_server(self) -> None:
         await self._app.cleanup()
 
 
 class DbusServer:
-    def __init__(self, handler: Callable[[dict], Awaitable[None]]) -> None:
+    def __init__(self, handler: Callable[[dbus.DbusSignal], Awaitable[None]]) -> None:
         self._handler = handler
 
-    def __call__(self):
+    def __call__(self) -> "DbusProtocol":
         return DbusProtocol(handler=self._handler)
 
     async def shutdown(self, timeout: int) -> None:
@@ -38,10 +41,10 @@ class DbusServer:
 
 
 class DbusProtocol(dbus.DbusProtocol):
-    def __init__(self, handler: Callable[[dict], Awaitable[None]]) -> None:
+    def __init__(self, handler: Callable[[dbus.DbusSignal], Awaitable[None]]) -> None:
         self._handler = handler
 
-    def message_received(self, message, bus):
+    def message_received(self, message: dbussy.Message, bus: dbussy.Connection) -> None:
         signal = dbus.DbusSignal(
             bus=bus,
             interface=message.interface,
@@ -52,12 +55,14 @@ class DbusProtocol(dbus.DbusProtocol):
         LOG.log(4, signal)
         asyncio.ensure_future(self._handler(signal))
 
-    def connection_lost(self, exc):
-        pass    
+    def connection_lost(self, eror: Optional[Exception]) -> None:
+        pass
 
 
 class Application(collections.MutableMapping):
-    def __init__(self, app, middlewares=None) -> None:
+    def __init__(
+        self, app: MainApplication, middlewares: Optional[Iterable] = None
+    ) -> None:
 
         if middlewares:
             middlewares = list(middlewares)
@@ -68,20 +73,20 @@ class Application(collections.MutableMapping):
         self._state = collections.ChainMap({}, app)
         self._middlewares = middlewares
 
-    async def shutdown(self):
+    async def shutdown(self) -> None:
         pass
 
-    async def cleanup(self):
+    async def cleanup(self) -> None:
         pass
 
-    async def _handler(self, signal):
+    async def _handler(self, signal: dbus.DbusSignal) -> None:
         route = self.router.resolve(signal)
         if route:
             for middleware in reversed(self._middlewares):
                 route = functools.partial(middleware, handler=route)
             try:
                 await route(signal)
-            except Exception as e:
+            except Exception:
                 LOG.exception("Exception while handling signal: %s ", signal)
 
     # MutableMapping API
@@ -103,14 +108,23 @@ class Application(collections.MutableMapping):
     def __iter__(self):
         return iter(self._state)
 
+
 class Router:
     def __init__(self):
         self._routes = defaultdict(dict)
 
-    def add(self, handler, interface, path=None, member=None):
+    def add(
+        self,
+        handler: Callable[[dbus.DbusSignal], Awaitable[None]],
+        interface: str,
+        path: Tuple[str] = None,
+        member: str = None,
+    ) -> None:
         self._routes[interface][(path, member)] = handler
 
-    def resolve(self, signal):
+    def resolve(
+        self, signal: dbus.DbusSignal
+    ) -> Optional[Callable[[dbus.DbusSignal], Awaitable[None]]]:
         try:
             return self._routes[signal.interface][(signal.path, signal.member)]
         except KeyError:
@@ -130,3 +144,5 @@ class Router:
             return self._routes[signal.interface][(None, None)]
         except KeyError:
             pass
+
+        return None
