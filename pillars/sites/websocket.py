@@ -41,7 +41,7 @@ class WSTransport(asyncio.BaseTransport):
         if self._ws:
             try:
                 await self._ws.ping()
-            except Exception as e:
+            except Exception:
                 LOG.exception("Failed status for WS transport: %s", self._ws)
                 return False
             return True
