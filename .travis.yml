@@ -32,7 +32,7 @@ script:
 
 deploy:
   - provider: script
-    script: poetry publish --username Ovv --password $PYPI_PASS
+    script: poetry publish --username Ovv --password $PYPI_PASS --build
     on:
       repo: Eyepea/pillars
       branch: master
