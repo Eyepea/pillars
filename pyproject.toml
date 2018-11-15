@@ -7,7 +7,7 @@ readme = "README.rst"
 license = "Apache-2.0"
 
 [tool.poetry.dependencies]
-python = "3.7"
+python = "^3.7"
 cython = "^0.28.5"
 uvloop = "^0.11.2"
 cchardet = "^2.1"
