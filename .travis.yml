@@ -20,6 +20,10 @@ matrix:
       dist: xenial
       sudo: true
 
+env:
+  global:
+    - secure: "q3L244wkl7nF+TK6no4UWoaVILAdp70sDKgSjwnBiibc2vVr0yrhDseitV1kIq4kpfnb+fOHtV32eHOoP77CRkgMjZ1Kh2zVUweavmI4gji1fqz5gJMUlaellAtn+PARgmizAplk0/dMJQ7L/NhwyDnwUFgR10x8b8OZqlkBGQpf6YDefGs9d8VA1J8Fni7YsvOpySLQR9LFSn5b7BmgQ1aysjJVn/VEKpfGld9qEsNzGi1TZ7P0AETVyjHZ4KOfx9m0YiARMAlobDDEIlYm940PCo1n+GPxUFkP5pa95r92LHe9/gZvgD1UKLkAaousR2GLsqIn//ccaj4h2oat+4lM59CkJRXI4E+iY/Q3Df/nZINbFxr/7HPKxa/9cUXnKOODm12b9S5XDul1rwlGAH4xUA2a+sLPXhaGOPKh+nim00iVpxiHsb/nIMyakrWtWLyMK2RPQi7k3o9iUReSs2gYPz6VBdjsnJAD/k3ZFfRHfjNFKzBSGuCduK+u9kSPz6wQBNLlBCw9xSQ5SUbKAzPnhq91NhklEvV6sYfJBibS7mHgTvoaw+JbxqQlmQyQPUkVKHB3pcAzvl8M3hAxHGL5s65JyJGfSoSiSAjn0ATp7kZVGf292LOoUVRuLyK2zkUqjJUdHyTFNcny818aFloasZbsjfesgSbovAJOlfc="
+
 install:
   - pip install poetry tox
 
@@ -27,11 +31,8 @@ script:
   - poetry run tox
 
 deploy:
-  - provider: pypi
-    distributions: sdist bdist_wheel
-    user: Ovv
-    password:
-      secure: bA+YZtpGWYgxuWSxqqjeaHVRYL60jUWeJawMhtACQxFc21Xre9/3wtbdRcd55ZQqe0k0Q1YnJ+V5LIa2npsmTOaJMN6ZOJy7qFqt6fCQzb47SYEw3oXZZdNPFtcu5kMqdwU41EB131Cs/igfZYsTVRSPD/Qzj23Dydlz1ndcHUGf8gRtDbW0ErOW+W7yr9RR1ZfoXYFRNzi7YsnGB32qj2Iq02g/CzOH/8sTPV0sReS1EleHj9EGxdLje6WcSIAMEquDXReANsVon48Xm+DK3F4+x2sDnlRta4+dt6XDeDxoGlMMQ/CAy5yTcIzcDrY/RkpxujzY3LbANVHoINrPTMbqO6VnUJTABMNGquGKb1pcH3FQ3mOjZ9IxEGgcUA/VH+Ml2zWG0Y6aHSfJsLTPunxlAEs8j6A6en/xfqPBpBtIpBKUaBik7xzmxvP9U5Ikww5ud3nMliKwO1HasFOgyhaf2Ey3cvwyvaM8Lvu18mKQJJ876mrVZ7AISLHRuQIZ11HfihA5UKY9kVuKd6boJ03HbKrTtXt/4+YPtUYiE48GZMM9ur4odg5CajMZbG1ApBT9cemKDVkPKO0Xi21VtIQ8/ws5vKuupD6O5JPkCveMbj6TUVZGJ92cNyXGQoQq4cQ52qchuvNBmiZoX2V2TZIj46i5o5S9DW4y/wheXtg=
+  - provider: script
+    script: poetry publish --username Ovv --password $PYPI_PASS
     on:
       repo: Eyepea/pillars
       branch: master
