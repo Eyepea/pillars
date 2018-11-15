@@ -80,7 +80,7 @@ class Application(collections.MutableMapping):
             route = functools.partial(middleware, handler=route)
         try:
             await route(event)
-        except Exception as e:
+        except Exception:
             LOG.exception("Exception while handling event: %s ", event)
 
     # MutableMapping API

@@ -73,7 +73,7 @@ class PG:
                 await con.fetchval("SELECT 1")
         except asyncio.TimeoutError:
             return False
-        except Exception as e:
+        except Exception:
             LOG.exception("PostgreSQL failed status")
             return False
         else:

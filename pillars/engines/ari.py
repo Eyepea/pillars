@@ -53,7 +53,7 @@ class AriClient:
     async def status(self) -> bool:
         try:
             await self.request("GET", f"applications/{self._name}")
-        except Exception as e:
+        except Exception:
             LOG.exception("ARI Client failed status")
             return False
         else:
