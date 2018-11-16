@@ -50,6 +50,14 @@ For more examples see the `examples folder <https://github.com/eyepea/pillars/tr
 Changelog
 ---------
 
+0.2.1
+`````
+
+* Properly close websocket connection
+* Remove pg uuid encoder
+* Log when pg jsonb encode fails
+* Use aiohttp exception for ARI transports
+
 0.1.1
 `````
 
