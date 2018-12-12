@@ -2,10 +2,10 @@ import asyncio
 import collections
 import functools
 import logging
-import async_timeout
-from typing import Awaitable, Callable, Iterable, Optional, Tuple, Union
+from typing import Awaitable, Callable, Iterable, List, Optional, Tuple, Union
 
 import aiohttp.http_websocket
+import async_timeout
 from aiohttp.web_runner import BaseRunner
 import ujson
 
@@ -107,7 +107,7 @@ class Application(collections.MutableMapping):
 class AriServer:
     def __init__(self, handler: Callable[[dict], Awaitable[None]]) -> None:
         self._handler = handler
-        self._connections = list()
+        self._connections: List["AriProtocol"] = list()
 
     def __call__(self) -> "AriProtocol":
         proto = AriProtocol(handler=self._handler)
@@ -122,7 +122,7 @@ class AriServer:
 class AriProtocol(WSProtocol):
     def __init__(self, handler: Callable[[dict], Awaitable[None]]) -> None:
         self._handler = handler
-        self._tasks = list()
+        self._tasks: List[asyncio.Task] = list()
 
     def message_received(
         self,
@@ -138,7 +138,7 @@ class AriProtocol(WSProtocol):
             self._tasks.append(task)
             task.add_done_callback(self._task_completed)
         else:
-            LOG.debug("Unhandle websocket message: %s", message_type)
+            LOG.debug("Unhandled websocket message: %s", message_type)
 
     def connection_lost(self, error: Optional[Exception]) -> None:
         if error:

@@ -31,7 +31,7 @@ class TestAri:
     @pytest.mark.asyncio
     async def test_ari_client(self, ari_client, app):
         assert ari_client._startup in app.on_startup
-        assert ari_client._shutdown in app.on_shutdown
+        assert ari_client._cleanup in app.on_cleanup
 
         await app.start()
         assert isinstance(ari_client._client, aiohttp.client.ClientSession)
