@@ -37,7 +37,7 @@ class AriClient:
         self._client: Optional[aiohttp.ClientSession] = None
 
         app.on_startup.append(self._startup)
-        app.on_shutdown.append(self._shutdown)
+        app.on_cleanup.append(self._cleanup)
 
     async def _startup(self, app: Application) -> None:
         LOG.debug("Starting ARI client engine")
@@ -45,8 +45,8 @@ class AriClient:
             auth=self._auth, json_serialize=ujson.dumps
         )
 
-    async def _shutdown(self, app: Application) -> None:
-        LOG.debug("Shutting down ARI client engine")
+    async def _cleanup(self, app: Application) -> None:
+        LOG.debug("Cleaning up ARI client engine")
         if self._client:
             await self._client.close()
 

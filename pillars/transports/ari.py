@@ -2,9 +2,10 @@ import asyncio
 import collections
 import functools
 import logging
-from typing import Awaitable, Callable, Iterable, Optional, Tuple, Union
+from typing import Awaitable, Callable, Iterable, List, Optional, Tuple, Union
 
 import aiohttp.http_websocket
+import async_timeout
 from aiohttp.web_runner import BaseRunner
 import ujson
 
@@ -106,17 +107,22 @@ class Application(collections.MutableMapping):
 class AriServer:
     def __init__(self, handler: Callable[[dict], Awaitable[None]]) -> None:
         self._handler = handler
+        self._connections: List["AriProtocol"] = list()
 
     def __call__(self) -> "AriProtocol":
-        return AriProtocol(handler=self._handler)
+        proto = AriProtocol(handler=self._handler)
+        self._connections.append(proto)
+        return proto
 
     async def shutdown(self, timeout: int) -> None:
-        pass
+        async with async_timeout.timeout(timeout):
+            await asyncio.gather(*(proto.shutdown() for proto in self._connections))
 
 
 class AriProtocol(WSProtocol):
     def __init__(self, handler: Callable[[dict], Awaitable[None]]) -> None:
         self._handler = handler
+        self._tasks: List[asyncio.Task] = list()
 
     def message_received(
         self,
@@ -128,13 +134,21 @@ class AriProtocol(WSProtocol):
         if isinstance(data, (str, bytes)):
             # TODO mypy #1533
             payload = ujson.loads(data)  # type: ignore
-            asyncio.ensure_future(self._handler(payload))
+            task = asyncio.create_task(self._handler(payload))
+            self._tasks.append(task)
+            task.add_done_callback(self._task_completed)
         else:
-            LOG.debug("Unhandle websocket message: %s", message_type)
+            LOG.debug("Unhandled websocket message: %s", message_type)
 
     def connection_lost(self, error: Optional[Exception]) -> None:
         if error:
             LOG.error(error)
+
+    def _task_completed(self, task):
+        self._tasks.remove(task)
+
+    async def shutdown(self):
+        await asyncio.gather(*(task for task in self._tasks))
 
 
 class AriRequest(BaseRequest):
