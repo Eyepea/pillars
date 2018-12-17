@@ -188,7 +188,7 @@ class Router:
     def add(
         self,
         event: str,
-        handler: Callable[[Union[BaseRequest, Event]], Awaitable[None]],
+        handler: Callable[..., Awaitable[None]],
         config: Optional[dict] = None,
     ):
         if config is None:
@@ -198,8 +198,5 @@ class Router:
 
     def resolve(
         self, event: str
-    ) -> Union[
-        Tuple[None, None],
-        Tuple[Callable[[Union[BaseRequest, Event]], Awaitable[None]], dict],
-    ]:
+    ) -> Union[Tuple[None, None], Tuple[Callable[..., Awaitable[None]], dict]]:
         return self._routes.get(event.lower(), self._routes.get("*", (None, None)))
