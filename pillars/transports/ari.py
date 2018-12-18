@@ -2,7 +2,7 @@ import asyncio
 import collections
 import functools
 import logging
-from typing import Awaitable, Callable, Iterable, List, Optional, Tuple, Union
+from typing import Any, Awaitable, Callable, Iterable, List, Optional, Tuple, Union
 
 import aiohttp.http_websocket
 import async_timeout
@@ -186,17 +186,11 @@ class Router:
         self._routes: dict = dict()
 
     def add(
-        self,
-        event: str,
-        handler: Callable[..., Awaitable[None]],
-        config: Optional[dict] = None,
+        self, event: str, handler: Callable[..., Awaitable[None]], config: Any = None
     ):
-        if config is None:
-            config = dict()
-
         self._routes[event.lower()] = (handler, config)
 
     def resolve(
         self, event: str
-    ) -> Union[Tuple[None, None], Tuple[Callable[..., Awaitable[None]], dict]]:
+    ) -> Union[Tuple[None, None], Tuple[Callable[..., Awaitable[None]], Any]]:
         return self._routes.get(event.lower(), self._routes.get("*", (None, None)))
