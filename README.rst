@@ -50,6 +50,17 @@ For more examples see the `examples folder <https://github.com/eyepea/pillars/tr
 Changelog
 ---------
 
+0.2.3
+`````
+
+* Add custom json encoder for UUID
+* Add `json_encoder` argument to `pillars.Response`
+
+0.2.2
+`````
+
+* Fix ARI engine shutdown
+
 0.2.1
 `````
 
