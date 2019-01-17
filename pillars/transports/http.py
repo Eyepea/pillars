@@ -1,3 +1,5 @@
+import functools
+import json
 import logging
 from typing import Awaitable, Callable, Optional
 
@@ -20,7 +22,11 @@ async def middleware(
     common_request = HttpRequest(request)
     response = await handler(common_request)
     if isinstance(response, Response):
-        return aiohttp.web.json_response(status=response.status, data=response.data)
+        return aiohttp.web.json_response(
+            status=response.status,
+            data=response.data,
+            dumps=functools.partial(json.dumps(cls=response.json_encoder)),
+        )
     else:
         return response
 
@@ -34,7 +40,7 @@ class HttpRequest(BaseRequest):
 
     async def data(self, validate: bool = None) -> dict:
         if self._data is None:
-            if "json" in self["config"]:
+            if "json" in self.config:
                 self._data = await self._request.json(loads=ujson.loads)
             elif self._request.method == "GET":
                 self._data = dict(self._request.query)

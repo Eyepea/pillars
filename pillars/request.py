@@ -1,8 +1,9 @@
 import collections
+import json
 import logging
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any, Optional, Type
 
 LOG = logging.getLogger(__name__)
 
@@ -55,3 +56,4 @@ class BaseRequest:
 class Response:
     status: int
     data: dict = field(default_factory=dict)
+    json_encoder: Type[json.JSONEncoder] = field(default=json.JSONEncoder)
