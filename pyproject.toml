@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pillars"
-version = "0.2.2"
+version = "0.2.3"
 description = "Collection of helpers for building asyncio daemons."
 authors = ["Allocloud <allocloud@ovv.wtf>"]
 readme = "README.rst"
