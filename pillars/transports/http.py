@@ -25,7 +25,7 @@ async def middleware(
         return aiohttp.web.json_response(
             status=response.status,
             data=response.data,
-            dumps=functools.partial(json.dumps(cls=response.json_encoder)),
+            dumps=functools.partial(json.dumps, cls=response.json_encoder),
         )
     else:
         return response

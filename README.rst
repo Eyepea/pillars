@@ -50,6 +50,11 @@ For more examples see the `examples folder <https://github.com/eyepea/pillars/tr
 Changelog
 ---------
 
+0.2.4
+`````
+
+* Bugfix for `json_encoder` argument
+
 0.2.3
 `````
 

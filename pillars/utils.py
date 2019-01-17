@@ -12,4 +12,4 @@ class JSONUUIDEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, uuid.UUID):
             return o.hex
-        return json.JSONEncoder.default(self, o)
+        return super().default(self, o)
