@@ -3,7 +3,7 @@ import collections
 import logging
 from typing import Awaitable, Callable, Optional, Tuple, Union
 
-from aiohttp.web_runner import BaseRunner
+from ..base import BaseRunner
 
 LOG = logging.getLogger(__name__)
 

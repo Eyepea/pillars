@@ -4,14 +4,8 @@ from typing import Optional, Union
 
 import aiohttp
 import aiohttp.http_websocket
-from aiohttp.web_runner import (  # noQa: F401
-    BaseRunner,
-    BaseSite,
-    SockSite,
-    TCPSite,
-    UnixSite,
-)
 
+from ..base import BaseRunner, BaseSite
 from .protocol import ProtocolType
 
 LOG = logging.getLogger(__name__)
@@ -20,7 +14,7 @@ LOG = logging.getLogger(__name__)
 class WSTransport(asyncio.BaseTransport):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self._ws = None
+        self._ws: Optional[aiohttp.ClientWebSocketResponse] = None
         self._closing = False
         self._closed: Optional[asyncio.Task] = None
 
