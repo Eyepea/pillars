@@ -5,8 +5,8 @@ import logging
 from typing import Awaitable, Callable, Iterable, Optional
 
 import panoramisk
-from aiohttp.web_runner import BaseRunner
 
+from ..base import BaseRunner
 from ..request import BaseRequest
 
 LOG = logging.getLogger(__name__)

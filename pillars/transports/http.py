@@ -5,7 +5,7 @@ from typing import Awaitable, Callable, Optional
 
 import aiohttp.web
 import cerberus
-from aiohttp.web_urldispatcher import UrlDispatcher
+from aiohttp.abc import AbstractMatchInfo
 import ujson
 
 from ..exceptions import DataValidationError
@@ -33,7 +33,7 @@ async def middleware(
 
 class HttpRequest(BaseRequest):
     def __init__(self, request: aiohttp.web.Request) -> None:
-        super().__init__(request.app.state)
+        super().__init__(request.app.state)  # type: ignore
         self._request = request
         self._data: Optional[dict] = None
         self["validator"] = self._request["validator"]
@@ -90,7 +90,7 @@ class Application(aiohttp.web.Application):
         super().__init__(**kwargs)
 
 
-class Router(UrlDispatcher):
+class Router(aiohttp.web.UrlDispatcher):
     def __init__(self) -> None:
         super().__init__()
         self.config: dict = dict()
@@ -114,8 +114,8 @@ class Router(UrlDispatcher):
             self.config[route] = set()
         return route
 
-    async def resolve(self, request: aiohttp.web.Request) -> aiohttp.web.Resource:
-        resource = await super().resolve(request)
-        request["config"] = self.config.get(resource.route, ())
-        request["validator"] = self.validators.get(resource.route)
-        return resource
+    async def resolve(self, request: aiohttp.web.Request) -> AbstractMatchInfo:
+        match_info = await super().resolve(request)
+        request["config"] = self.config.get(match_info.handler, ())
+        request["validator"] = self.validators.get(match_info.handler)
+        return match_info

@@ -3,8 +3,8 @@ import logging
 from typing import Union
 
 import aiosip
-from aiohttp.web_runner import BaseRunner
 
+from ..base import BaseRunner
 from ..sites import ProtocolType
 
 LOG = logging.getLogger(__name__)

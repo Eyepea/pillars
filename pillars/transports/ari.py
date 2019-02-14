@@ -6,10 +6,10 @@ from typing import Any, Awaitable, Callable, Iterable, List, Optional, Tuple, Un
 
 import aiohttp.http_websocket
 import async_timeout
-from aiohttp.web_runner import BaseRunner
 import ujson
 
 from ..app import Application as MainApplication
+from ..base import BaseRunner
 from ..request import BaseRequest
 from ..sites.websocket import WSProtocol
 

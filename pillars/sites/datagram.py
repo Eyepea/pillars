@@ -63,13 +63,15 @@ class UDPSite(BaseSite):
     async def start(self) -> None:
         await super().start()
         loop = asyncio.get_event_loop()
-        transport, protocol = await loop.create_datagram_endpoint(
-            self._runner.server,
-            local_addr=(self._host, self._port),
-            reuse_address=self._reuse_address,
-            reuse_port=self._reuse_port,
-        )  # type: ignore
-        self._server = DatagramServer(transport)  # type: ignore
+
+        if self._runner.server:
+            transport, protocol = await loop.create_datagram_endpoint(
+                self._runner.server,
+                local_addr=(self._host, self._port),
+                reuse_address=self._reuse_address,
+                reuse_port=self._reuse_port,
+            )  # type: ignore
+            self._server = DatagramServer(transport)  # type: ignore
 
 
 class DatagramUnixSite(BaseSite):
@@ -132,7 +134,9 @@ class DatagramSockSite(BaseSite):
     async def start(self) -> None:
         await super().start()
         loop = asyncio.get_event_loop()
-        transport, protocol = await loop.create_datagram_endpoint(
-            self._runner.server, sock=self._sock
-        )  # type: ignore
-        self._server = DatagramServer(transport)  # type: ignore
+
+        if self._runner.server:
+            transport, protocol = await loop.create_datagram_endpoint(
+                self._runner.server, sock=self._sock
+            )  # type: ignore
+            self._server = DatagramServer(transport)  # type: ignore
