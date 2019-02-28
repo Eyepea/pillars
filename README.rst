@@ -50,6 +50,16 @@ For more examples see the `examples folder <https://github.com/eyepea/pillars/tr
 Changelog
 ---------
 
+0.4.0
+`````
+
+* Add on_started signal
+
+0.3.0
+`````
+
+* Dependencies update
+
 0.2.4
 `````
 
