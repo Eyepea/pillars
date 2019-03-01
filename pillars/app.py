@@ -45,6 +45,7 @@ class Application(collections.MutableMapping):
         self._frozen = False
         self._subapps: dict = dict()
         self._on_startup: signals.Signal = signals.Signal(self)
+        self._on_started: signals.Signal = signals.Signal(self)
         self._on_cleanup: signals.Signal = signals.Signal(self)
         self._on_shutdown: signals.Signal = signals.Signal(self)
         self["name"] = name
@@ -102,6 +103,7 @@ class Application(collections.MutableMapping):
             return
 
         self.on_startup.freeze()
+        self.on_started.freeze()
         self.on_shutdown.freeze()
         self.on_cleanup.freeze()
         self._frozen = True
@@ -130,6 +132,7 @@ class Application(collections.MutableMapping):
                 for site in subapp.sites
             )
         )
+        await self.on_started.send(self)
 
     async def stop(self) -> None:
         LOG.debug("Stopping application")
@@ -154,6 +157,10 @@ class Application(collections.MutableMapping):
     @property
     def on_startup(self) -> signals.Signal:
         return self._on_startup
+
+    @property
+    def on_started(self) -> signals.Signal:
+        return self._on_started
 
     @property
     def on_shutdown(self) -> signals.Signal:
