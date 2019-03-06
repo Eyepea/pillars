@@ -5,8 +5,8 @@ from typing import Awaitable, Callable, Optional
 
 import aiohttp.web
 import cerberus
-from aiohttp.abc import AbstractMatchInfo
 import ujson
+from aiohttp.abc import AbstractMatchInfo
 
 from ..exceptions import DataValidationError
 from ..request import BaseRequest, Response

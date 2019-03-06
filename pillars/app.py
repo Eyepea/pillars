@@ -5,9 +5,9 @@ import signal
 from dataclasses import dataclass
 from typing import Any, Callable, List, Optional
 
+import setproctitle
 from aiohttp import signals
 from aiohttp.web_runner import BaseRunner, BaseSite
-import setproctitle
 
 from . import exceptions
 

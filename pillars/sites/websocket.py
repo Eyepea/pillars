@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Optional, Union
+from typing import Awaitable, Callable, Optional, Union
 
 import aiohttp
 import aiohttp.http_websocket
@@ -88,6 +88,7 @@ class WSClientSite(BaseSite):
         *,
         shutdown_timeout: float = 60.0,
         session: aiohttp.ClientSession = None,
+        on_connection: Optional[Callable[[], Awaitable[None]]] = None,
     ) -> None:
         super().__init__(runner, shutdown_timeout=shutdown_timeout)
         self._url = url
@@ -98,6 +99,7 @@ class WSClientSite(BaseSite):
         self._transport: Optional[WSTransport] = None
         self._closing = False
         self._protocol_type = ProtocolType.WS
+        self._on_connection = on_connection
 
     @property
     def name(self) -> str:
@@ -122,6 +124,7 @@ class WSClientSite(BaseSite):
             async with self._session.ws_connect(self._url) as ws:
                 self._transport._ws = ws
                 self._protocol.connection_made(self._transport)
+                asyncio.create_task(self._connected())
                 async for message in ws:
                     LOG.log(2, "Data received: %s", message)
                     self._protocol.message_received(
@@ -147,3 +150,10 @@ class WSClientSite(BaseSite):
             return await self._transport.status()
         else:
             return False
+
+    async def _connected(self) -> None:
+        try:
+            if self._on_connection:
+                await self._on_connection()
+        except Exception:
+            LOG.exception(f"Error calling 'on_connection' for: {self}")
