@@ -50,6 +50,11 @@ For more examples see the `examples folder <https://github.com/eyepea/pillars/tr
 Changelog
 ---------
 
+0.4.1
+`````
+
+* Add `on_connection` callback to websocket site
+
 0.4.0
 `````
 
