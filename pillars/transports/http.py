@@ -116,6 +116,6 @@ class Router(aiohttp.web.UrlDispatcher):
 
     async def resolve(self, request: aiohttp.web.Request) -> AbstractMatchInfo:
         match_info = await super().resolve(request)
-        request["config"] = self.config.get(match_info.handler, ())
-        request["validator"] = self.validators.get(match_info.handler)
+        request["config"] = self.config.get(match_info.route, ())
+        request["validator"] = self.validators.get(match_info.route)
         return match_info
