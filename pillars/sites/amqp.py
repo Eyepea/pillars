@@ -4,15 +4,16 @@ from typing import Awaitable, Callable, Optional, Union
 
 import aiohttp
 import aiohttp.http_websocket
+import aio_pika
 import json
 
 from ..base import BaseRunner, BaseSite
 from .protocol import ProtocolType
 
-
 LOG = logging.getLogger(__name__)
 
-class WSTransport(asyncio.BaseTransport):
+
+class AmqpTransport(asyncio.BaseTransport):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self._ws: Optional[aiohttp.ClientWebSocketResponse] = None
@@ -56,12 +57,18 @@ class WSTransport(asyncio.BaseTransport):
         raise NotImplementedError
 
 
-class WSServer:
-    """
-    Shim to present a unified server interface.
-    """
+class AmqpProtocol(asyncio.BaseProtocol):
+    def message_received(
+        self,
+        message_type: str,
+        data: dict,
+        extra: str,
+    ):
+        raise NotImplementedError()
 
-    def __init__(self, transport: WSTransport) -> None:
+
+class AmqpServer:
+    def __init__(self, transport: AmqpTransport) -> None:
         self.transport = transport
 
     def close(self) -> None:
@@ -71,36 +78,23 @@ class WSServer:
         await self.transport.closed()
 
 
-class WSProtocol(asyncio.BaseProtocol):
-    def message_received(
-        self,
-        message_type: aiohttp.http_websocket.WSMsgType,
-        data: Union[str, bytes, aiohttp.http_websocket.WSCloseCode],
-        extra: str,
-    ):
-        raise NotImplementedError()
-
-
-class WSClientSite(BaseSite):
+class AmqpClient(BaseSite):
     def __init__(
         self,
         runner: BaseRunner,
-        url: str,
         *,
         shutdown_timeout: float = 60.0,
         session: aiohttp.ClientSession = None,
         on_connection: Optional[Callable[[], Awaitable[None]]] = None,
     ) -> None:
         super().__init__(runner, shutdown_timeout=shutdown_timeout)
-        self._url = url
-        self._name = f"WS://{url}"
-        self._server = None
-        self._session = session or aiohttp.ClientSession()
-        self._protocol: Optional[WSProtocol] = None
-        self._transport: Optional[WSTransport] = None
-        self._closing = False
-        self._protocol_type = ProtocolType.WS
+        self._connection = None
+        self._channel = None
+        self._exchange = False
+        self._queue = None
+        self._protocol = None
         self._on_connection = on_connection
+        self._loop = asyncio.get_event_loop()
 
     @property
     def name(self) -> str:
@@ -108,49 +102,36 @@ class WSClientSite(BaseSite):
 
     async def start(self) -> None:
         await super().start()
-        self._protocol: asyncio.Protocol = self._runner.server()
-        self._transport: WSTransport = WSTransport()
-        asyncio.create_task(self._ws_connection())  # type: ignore
-        self._server = WSServer(transport=self._transport)
+        await self.create_connection()
+        asyncio.create_task(self._amqp_consumer())
 
     async def stop(self) -> None:
         self._closing = True
         await super().stop()
 
-    async def _ws_connection(self) -> None:
-        if not self._transport or not self._protocol:
-            raise TypeError("Missing transport and protocol")
+    async def create_connection(self):
+        LOG.debug('AAAA Create a New Queue')
+        self._protocol = asyncio.Protocol = self._runner.server()
+        self._connection = await aio_pika.connect("amqp://guest:guest@localhost", loop=self._loop)
+        self._channel = await self._connection.channel()
+        self._exchange = await self._channel.declare_exchange(
+            "asterisk", aio_pika.ExchangeType.TOPIC
+        )
+        self._queue = await self._channel.declare_queue('')
+        await self._queue.bind(self._exchange, routing_key='stasis.app.potter')
+        asyncio.create_task(self._connected())
 
+    async def _amqp_consumer(self) -> None:
         try:
-            async with self._session.ws_connect(self._url) as ws:
-                self._transport._ws = ws
-                self._protocol.connection_made(self._transport)
-                asyncio.create_task(self._connected())
-                async for message in ws:
-                    LOG.log(2, "Data received on WS: %s", message)
-                    #self._protocol.message_received(
-                    #    message.type, message.data, message.extra
-                    #)
-                    # WSMsgType.CLOSE should call connection_lost
+            while True:
+                await self._queue.consume(self.callback)
 
-            # TODO: mypy #5537 09/2018
-            self._protocol.connection_lost(None)  # type: ignore
-        except aiohttp.client_exceptions.ClientError as e:
-            LOG.debug("Failed to connect to %: %s", self._url, e)
-            await asyncio.sleep(0.1)
         except Exception as e:
-            self._protocol.connection_lost(e)
+            LOG.info("ERROR : %s" % e)
 
-        if self._closing:
-            await self._session.close()
-        else:
-            asyncio.create_task(self._ws_connection())  # type: ignore
-
-    async def status(self) -> bool:
-        if self._transport:
-            return await self._transport.status()
-        else:
-            return False
+    async def callback(self, message):
+        with message.process():
+            self._protocol.message_received(data=json.loads(message.body.decode()), extra='', message_type='json')
 
     async def _connected(self) -> None:
         try:
@@ -158,3 +139,4 @@ class WSClientSite(BaseSite):
                 await self._on_connection()
         except Exception:
             LOG.exception(f"Error calling 'on_connection' for: {self}")
+
