@@ -12,6 +12,7 @@ from .protocol import ProtocolType
 
 LOG = logging.getLogger(__name__)
 
+
 class WSTransport(asyncio.BaseTransport):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -128,9 +129,9 @@ class WSClientSite(BaseSite):
                 asyncio.create_task(self._connected())
                 async for message in ws:
                     LOG.log(2, "Data received on WS: %s", message)
-                    #self._protocol.message_received(
-                    #    message.type, message.data, message.extra
-                    #)
+                    self._protocol.message_received(
+                        message.type, message.data, message.extra
+                    )
                     # WSMsgType.CLOSE should call connection_lost
 
             # TODO: mypy #5537 09/2018

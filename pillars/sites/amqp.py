@@ -110,7 +110,6 @@ class AmqpClient(BaseSite):
         await super().stop()
 
     async def create_connection(self):
-        LOG.debug('AAAA Create a New Queue')
         self._protocol = asyncio.Protocol = self._runner.server()
         self._connection = await aio_pika.connect("amqp://guest:guest@localhost", loop=self._loop)
         self._channel = await self._connection.channel()
