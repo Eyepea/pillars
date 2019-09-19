@@ -86,6 +86,7 @@ class AmqpClient(BaseSite):
         shutdown_timeout: float = 60.0,
         session: aiohttp.ClientSession = None,
         on_connection: Optional[Callable[[], Awaitable[None]]] = None,
+        subscribe=False
     ) -> None:
         super().__init__(runner, shutdown_timeout=shutdown_timeout)
         self._connection = None
@@ -95,6 +96,7 @@ class AmqpClient(BaseSite):
         self._protocol = None
         self._on_connection = on_connection
         self._loop = asyncio.get_event_loop()
+        self.subscribe = subscribe
 
     @property
     def name(self) -> str:
@@ -129,8 +131,9 @@ class AmqpClient(BaseSite):
             LOG.info("ERROR : %s" % e)
 
     async def callback(self, message):
-        with message.process():
-            self._protocol.message_received(data=json.loads(message.body.decode()), extra='', message_type='json')
+        if self.subscribe:
+            with message.process():
+                self._protocol.message_received(data=json.loads(message.body.decode()), extra='', message_type='json')
 
     async def _connected(self) -> None:
         try:
