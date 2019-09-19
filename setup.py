@@ -1,38 +1,19 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
- 
-from setuptools import setup, find_packages
- 
-# notez qu'on import la lib
-# donc assurez-vous que l'importe n'a pas d'effet de bord
-import pillars
- 
+#!/usr/bin/python3
+
+from setuptools import setup, find_namespace_packages
+
 setup(
- 
     name='pillars',
- 
-    version=0.5,
- 
-    packages=find_packages(),
- 
-    author="Quentin Dawaans, Nicolas Turcksin",
- 
- 
- 
-    long_description=open('README.md').read(),
- 
-    url='http://github.com/eyepea/pillars',
- 
+    version='0.5.0',
+    description='Maintain PGSQL database schema with incremental patches',
+    author='Quentin Dawaans',
     classifiers=[
-        "Programming Language :: Python",
-        "Development Status :: 1 - Planning",
-        "License :: OSI Approved",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.7.4",
-        "Topic :: Communications",
+        'Programming Language :: Python :: 3.7',
     ],
- 
- 
- 
- 
+    packages=find_namespace_packages(),
+    install_requires=[
+    ],
+    setup_requires=[
+    ],
 )
+
