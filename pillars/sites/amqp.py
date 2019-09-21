@@ -57,7 +57,7 @@ class AmqpTransport(asyncio.BaseTransport):
         raise NotImplementedError
 
 
-class AmqpProtocol(asyncio.BaseProtocol):
+class RabbitProtocol(asyncio.BaseProtocol):
     def message_received(
         self,
         message_type: str,
@@ -86,7 +86,12 @@ class AmqpClient(BaseSite):
         shutdown_timeout: float = 60.0,
         session: aiohttp.ClientSession = None,
         on_connection: Optional[Callable[[], Awaitable[None]]] = None,
-        subscribe=False
+        subscribe=False,
+        server='amqp://guest:guest@127.0.0.1:5672',
+        exchange_name='',
+        queue_name='',
+        routing_key='',
+        durable=False
     ) -> None:
         super().__init__(runner, shutdown_timeout=shutdown_timeout)
         self._connection = None
@@ -97,6 +102,11 @@ class AmqpClient(BaseSite):
         self._on_connection = on_connection
         self._loop = asyncio.get_event_loop()
         self.subscribe = subscribe
+        self.server = server
+        self.exchange_name = exchange_name
+        self.queue_name = queue_name
+        self.routing_key = routing_key
+        self.durable = durable
 
     @property
     def name(self) -> str:
@@ -113,24 +123,32 @@ class AmqpClient(BaseSite):
 
     async def create_connection(self):
         self._protocol = asyncio.Protocol = self._runner.server()
-        self._connection = await aio_pika.connect("amqp://guest:guest@localhost", loop=self._loop)
+        self._connection = await aio_pika.connect(self.server, loop=self._loop)
         self._channel = await self._connection.channel()
         self._exchange = await self._channel.declare_exchange(
-            "asterisk", aio_pika.ExchangeType.TOPIC
+            self.exchange_name, aio_pika.ExchangeType.TOPIC
         )
-        self._queue = await self._channel.declare_queue('')
-        await self._queue.bind(self._exchange, routing_key='stasis.app.potter')
+        self._queue = await self._channel.declare_queue(self.queue_name, durable=self.durable)
+        await self._queue.bind(self._exchange, routing_key=self.routing_key)
         asyncio.create_task(self._connected())
 
     async def _amqp_consumer(self) -> None:
         try:
-            while True:
-                await self._queue.consume(self.callback)
+            async with self._queue.iterator() as queue_iter:
+                # Cancel consuming after __aexit__
+                async for message in queue_iter:
+                    async with message.process():
+                        self._protocol.message_received(data=json.loads(message.body.decode()), extra='',
+                                                        message_type='json')
+
+            #while True:
+                #await self._queue.consume(self.callback)
 
         except Exception as e:
             LOG.info("ERROR : %s" % e)
 
     async def callback(self, message):
+        print('Message received from AMQP')
         if self.subscribe:
             with message.process():
                 self._protocol.message_received(data=json.loads(message.body.decode()), extra='', message_type='json')

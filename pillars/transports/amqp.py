@@ -11,7 +11,7 @@ import ujson
 from ..app import Application as MainApplication
 from ..base import BaseRunner
 from ..request import BaseRequest
-from ..sites.amqp import AmqpProtocol
+from ..sites.amqp import RabbitProtocol
 
 LOG = logging.getLogger(__name__)
 
@@ -118,30 +118,24 @@ class AmqpServer:
             await asyncio.gather(*(proto.shutdown() for proto in self._connections))
 
 
-class AmqpProtocol(WSProtocol):
+class AmqpProtocol(RabbitProtocol):
     def __init__(self, handler: Callable[[dict], Awaitable[None]]) -> None:
         self._handler = handler
         self._tasks: List[asyncio.Task] = list()
 
     def message_received(
         self,
-        message_type,
-        data,
+        message_type: str,
+        data: dict,
         extra: str,
     ):
-        LOG.log(2, "Message received: %s %s", message_type, data)
-        if isinstance(data, (str, bytes)):
-            # TODO mypy #1533
-            payload = ujson.loads(data)  # type: ignore
-            task = asyncio.create_task(self._handler(payload))
-            self._tasks.append(task)
-            task.add_done_callback(self._task_completed)
-        elif isinstance(data, dict):
+        LOG.debug("Message received: %s %s", message_type, data)
+        if isinstance(data, dict):
             task = asyncio.create_task(self._handler(data['data']))
             self._tasks.append(task)
             task.add_done_callback(self._task_completed)
         else:
-            LOG.debug("Unhandled amqp message: %s", message_type)
+            LOG.debug("Unhandled websocket message: %s", message_type)
 
     def connection_lost(self, error: Optional[Exception]) -> None:
         if error:
