@@ -134,15 +134,15 @@ class AmqpClient(BaseSite):
 
     async def _amqp_consumer(self) -> None:
         try:
-            async with self._queue.iterator() as queue_iter:
-                # Cancel consuming after __aexit__
-                async for message in queue_iter:
-                    async with message.process():
-                        self._protocol.message_received(data=json.loads(message.body.decode()), extra='',
-                                                        message_type='json')
+            #async with self._queue.iterator() as queue_iter:
+            #    # Cancel consuming after __aexit__
+            #    async for message in queue_iter:
+            #        async with message.process():
+            #            self._protocol.message_received(data=json.loads(message.body.decode()), extra='',
+            #                                            message_type='json')
 
-            #while True:
-                #await self._queue.consume(self.callback)
+            while True:
+                await self._queue.consume(self.callback)
 
         except Exception as e:
             LOG.info("ERROR : %s" % e)
