@@ -1,0 +1,27 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+aiohttp = "*"
+mock = "*"
+ujson = "*"
+pytest = "*"
+setproctitle = "*"
+asyncpg = "*"
+aioredis = "*"
+aio-pika = "*"
+panoramisk = "*"
+cerberus = "*"
+aiosip = {ref = "34dcd2f83a3d3e78aae28f53e1f994fb43486f54",git = "https://github.com/eyepea/aiosip.git",editable = true}
+asynctest = "*"
+poetry = "*"
+flake8 = "*"
+tox = "*"
+bz2file = "*"
+
+[requires]
+python_version = "3.7"

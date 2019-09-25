@@ -1,5 +1,5 @@
 import asyncio
-import collections
+import collections.abc
 import logging
 import signal
 from dataclasses import dataclass

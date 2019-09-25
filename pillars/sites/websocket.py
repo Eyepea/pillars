@@ -4,9 +4,11 @@ from typing import Awaitable, Callable, Optional, Union
 
 import aiohttp
 import aiohttp.http_websocket
+import json
 
 from ..base import BaseRunner, BaseSite
 from .protocol import ProtocolType
+
 
 LOG = logging.getLogger(__name__)
 
@@ -89,6 +91,7 @@ class WSClientSite(BaseSite):
         shutdown_timeout: float = 60.0,
         session: aiohttp.ClientSession = None,
         on_connection: Optional[Callable[[], Awaitable[None]]] = None,
+        subscribe=False
     ) -> None:
         super().__init__(runner, shutdown_timeout=shutdown_timeout)
         self._url = url
@@ -100,6 +103,7 @@ class WSClientSite(BaseSite):
         self._closing = False
         self._protocol_type = ProtocolType.WS
         self._on_connection = on_connection
+        self.subscribe = subscribe
 
     @property
     def name(self) -> str:
@@ -126,10 +130,11 @@ class WSClientSite(BaseSite):
                 self._protocol.connection_made(self._transport)
                 asyncio.create_task(self._connected())
                 async for message in ws:
-                    LOG.log(2, "Data received: %s", message)
-                    self._protocol.message_received(
-                        message.type, message.data, message.extra
-                    )
+                    LOG.log(2, "Data received on WS: %s", message)
+                    if self.subscribe:
+                        self._protocol.message_received(
+                            message.type, message.data, message.extra
+                        )
                     # WSMsgType.CLOSE should call connection_lost
 
             # TODO: mypy #5537 09/2018

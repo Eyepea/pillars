@@ -1,1 +1,1 @@
-from . import ari, fast_agi, http, sip, syslog  # noQa: F401
+from . import ari, fast_agi, http, sip, syslog, amqp  # noQa: F401

@@ -62,6 +62,12 @@ class PG:
                 self._task = self._loop.create_task(self._connect())
                 pool = await asyncio.shield(self._result)
                 connection = await pool.acquire()
+            except Exception:
+                LOG.debug("Connection error while acquiring connection")
+                self._result = asyncio.Future()
+                self._task = self._loop.create_task(self._connect())
+                pool = await asyncio.shield(self._result)
+                connection = await pool.acquire()
             try:
                 yield connection
             finally:
